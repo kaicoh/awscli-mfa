@@ -1,3 +1,4 @@
+use awscli_mfa::{Config, Result};
 use clap::{Parser, Subcommand, Args};
 
 #[derive(Parser)]
@@ -38,13 +39,21 @@ struct DeviceArgs {
 }
 
 fn main() {
+    if let Err(err) = run() {
+        eprintln!("{}", err);
+        std::process::exit(1);
+    }
+}
+
+fn run() -> Result<()> {
     let cli = Cli::parse();
 
     let profile = cli.profile.unwrap_or("default".to_string());
 
     match &cli.command {
         Some(Commands::Ls) => {
-            println!("ls command selected");
+            let config = Config::new()?;
+            println!("{}", config);
         }
         Some(Commands::Set(DeviceArgs { profile, arn, secret })) => {
             println!("set {} to config file. arn: {}, secret: {}", profile, arn, secret);
@@ -53,4 +62,6 @@ fn main() {
             println!("exec mfa action for profile: {}", profile);
         }
     }
+
+    Ok(())
 }
