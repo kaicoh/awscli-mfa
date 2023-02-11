@@ -40,7 +40,7 @@ struct DeviceArgs {
 
 fn main() {
     if let Err(err) = run() {
-        eprintln!("{}", err);
+        eprintln!("{err}");
         std::process::exit(1);
     }
 }
@@ -53,13 +53,13 @@ fn run() -> Result<()> {
     match &cli.command {
         Some(Commands::Ls) => {
             let config = Config::new()?;
-            println!("{}", config);
+            println!("{config}");
         }
         Some(Commands::Set(DeviceArgs { profile, arn, secret })) => {
-            println!("set {} to config file. arn: {}, secret: {}", profile, arn, secret);
+            println!("set {profile} to config file. arn: {arn}, secret: {secret}");
         }
         None => {
-            println!("exec mfa action for profile: {}", profile);
+            println!("exec mfa action for profile: {profile}");
         }
     }
 

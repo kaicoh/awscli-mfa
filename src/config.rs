@@ -16,7 +16,7 @@ impl fmt::Display for Config {
             writeln!(f, "There are no mfa devices. Use set command to register your first mfa device.")
         } else {
             for d in self.devices.iter() {
-                writeln!(f, "{}", d)?;
+                writeln!(f, "{d}")?;
             }
             write!(f, "")
         }
@@ -48,7 +48,7 @@ impl Config {
 
     fn load(path: &Path) -> Result<Self> {
         if path.exists() {
-            let config = std::fs::read_to_string(&path)
+            let config = std::fs::read_to_string(path)
                 .map_err(|e| anyhow!("{}: {}", e, path.to_str().unwrap()))?;
             serde_yaml::from_str(&config).map_err(anyhow::Error::new)
         } else {
