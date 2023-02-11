@@ -327,7 +327,7 @@ dependencies = [
  "clap",
  "cli-clipboard",
  "dirs",
- "lazy_static",
+ "once_cell",
  "otp",
  "regex",
  "serde",

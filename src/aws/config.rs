@@ -2,16 +2,14 @@ use crate::Result;
 
 use super::sts::StsCredential;
 use anyhow::anyhow;
-use lazy_static::lazy_static;
+use once_cell::sync::Lazy;
 use regex::Regex;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::{Path, PathBuf};
 use std::string::ToString;
 
-lazy_static! {
-    static ref RE_PROFILE: Regex = Regex::new(r"\[(.+)\]").unwrap();
-}
+static RE_PROFILE: Lazy<Regex> = Lazy::new(|| Regex::new(r"\[(.+)\]").unwrap());
 
 #[derive(Debug)]
 pub struct Config {
