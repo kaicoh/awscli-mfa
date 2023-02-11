@@ -38,7 +38,7 @@ impl GetSessionToken {
         Self { token_code, ..self }
     }
 
-    pub async fn send(self) -> Result<Credential> {
+    pub async fn send(self) -> Result<StsCredential> {
         let Self {
             profile,
             duration_seconds,
@@ -60,18 +60,18 @@ impl GetSessionToken {
             .await
             .map_err(anyhow::Error::new)?;
 
-        Credential::try_from(output)
+        StsCredential::try_from(output)
     }
 }
 
 #[derive(Debug)]
-pub struct Credential {
+pub struct StsCredential {
     pub access_key_id: String,
     pub secret_access_key: String,
     pub session_token: String,
 }
 
-impl TryFrom<GetSessionTokenOutput> for Credential {
+impl TryFrom<GetSessionTokenOutput> for StsCredential {
     type Error = anyhow::Error;
 
     fn try_from(output: GetSessionTokenOutput) -> Result<Self> {

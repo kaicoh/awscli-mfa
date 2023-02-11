@@ -1,6 +1,6 @@
 use crate::Result;
 
-use super::sts;
+use super::sts::StsCredential;
 use anyhow::anyhow;
 use lazy_static::lazy_static;
 use regex::Regex;
@@ -102,8 +102,8 @@ impl ToString for Config {
 }
 
 impl Credential {
-    pub fn from_sts_cred(profile: &str, cred: sts::Credential) -> Self {
-        let sts::Credential {
+    pub fn from_sts_cred(profile: &str, cred: StsCredential) -> Self {
+        let StsCredential {
             access_key_id,
             secret_access_key,
             session_token,

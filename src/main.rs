@@ -10,7 +10,7 @@ struct Cli {
     #[arg(short, long)]
     profile: Option<String>,
 
-    /// Duration seconds that the credentials should remain valid..
+    /// Duration seconds that the credentials should remain valid.
     #[arg(short, long)]
     duration: Option<i32>,
 
@@ -39,10 +39,13 @@ async fn run() -> Result<()> {
         None => {
             let opt_profile = cli.profile;
             let opt_duration = cli.duration;
-            let profile = opt_profile.clone().unwrap_or("default".to_string());
+            let profile: &str = opt_profile
+                .as_ref()
+                .map(|val| val.as_str())
+                .unwrap_or("default");
 
-            let serial_number = config.get_arn(&profile)?;
-            let token_code = get_otp(&config, &profile)?;
+            let serial_number = config.get_arn(profile)?;
+            let token_code = get_otp(&config, profile)?;
 
             let sts_cred = GetSessionToken::new()
                 .set_profile(opt_profile)
@@ -52,9 +55,9 @@ async fn run() -> Result<()> {
                 .send()
                 .await?;
 
-            let credential = Credential::from_sts_cred("mfa", sts_cred);
-
-            AwsConfig::new()?.set(credential).save()
+            AwsConfig::new()?
+                .set(Credential::from_sts_cred("mfa", sts_cred))
+                .save()
         }
     }
 }
