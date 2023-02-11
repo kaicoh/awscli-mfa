@@ -99,7 +99,10 @@ impl Config {
     }
 
     fn get_device(&self, profile: &str) -> Result<Device> {
-        self.devices.iter().find(|d| d.profile == profile).cloned()
+        self.devices
+            .iter()
+            .find(|d| d.profile == profile)
+            .cloned()
             .ok_or(anyhow!("Not found mfa device for profile: {}", profile))
     }
 }
@@ -129,7 +132,10 @@ mod tests {
         let config = Config::load(path).unwrap();
         let arn = config.get_arn("test");
         assert!(arn.is_ok());
-        assert_eq!(arn.unwrap(), "arn:aws:iam::123456789012:mfa/mfa_device_name");
+        assert_eq!(
+            arn.unwrap(),
+            "arn:aws:iam::123456789012:mfa/mfa_device_name"
+        );
     }
 
     #[test]

@@ -18,10 +18,10 @@ pub fn run(config: Config, args: &Args) -> Result<()> {
     let Args { profile, clip } = args;
     let secret = config.get_secret(profile.as_deref().unwrap_or("default"))?;
     let password = otp::make_totp(&secret.to_ascii_uppercase(), 30, 0)
-        .map(|pass| format!("{}", pass))
+        .map(|pass| format!("{pass}"))
         .map_err(anyhow::Error::new)?;
 
-    println!("{}", password);
+    println!("{password}");
 
     if *clip {
         let mut ctx = ClipboardContext::new().map_err(|e| anyhow!("{}", e))?;
