@@ -80,10 +80,8 @@ impl Config {
     }
 
     fn write(&self, path: &Path) -> Result<()> {
-        let file = fs::File::create(path)
-            .map_err(anyhow::Error::new)?;
-        serde_yaml::to_writer(file, self)
-            .map_err(anyhow::Error::new)
+        let file = fs::File::create(path).map_err(anyhow::Error::new)?;
+        serde_yaml::to_writer(file, self).map_err(anyhow::Error::new)
     }
 
     fn path() -> Result<PathBuf> {
