@@ -13,3 +13,6 @@ Cargo.lock
 # Added by cargo
 
 /target
+
+# test files
+/mock/write_test.yml

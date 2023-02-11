@@ -3,7 +3,8 @@ use crate::Result;
 use anyhow::anyhow;
 use serde::{Deserialize, Serialize};
 use std::fmt;
-use std::path::Path;
+use std::fs;
+use std::path::{Path, PathBuf};
 
 #[derive(Debug, Deserialize, Serialize, Default)]
 pub struct Config {
@@ -43,10 +44,29 @@ impl fmt::Display for Device {
 
 impl Config {
     pub fn new() -> Result<Self> {
-        let path = dirs::home_dir()
-            .ok_or(anyhow!("Failed to get home directory."))?
-            .join(".aws/mfa_config.yml");
+        let path = Self::path()?;
         Self::load(path.as_path())
+    }
+
+    pub fn set(self, profile: &str, arn: &str, secret: &str) -> Self {
+        let mut devices: Vec<Device> = self
+            .devices
+            .into_iter()
+            .filter(|d| d.profile != profile)
+            .collect();
+
+        devices.push(Device {
+            profile: profile.into(),
+            arn: arn.into(),
+            secret: secret.into(),
+        });
+
+        Self { devices }
+    }
+
+    pub fn save(&self) -> Result<()> {
+        let path = Self::path()?;
+        self.write(path.as_path())
     }
 
     fn load(path: &Path) -> Result<Self> {
@@ -57,6 +77,19 @@ impl Config {
         } else {
             Ok(Self::default())
         }
+    }
+
+    fn write(&self, path: &Path) -> Result<()> {
+        let file = fs::File::create(path)
+            .map_err(anyhow::Error::new)?;
+        serde_yaml::to_writer(file, self)
+            .map_err(anyhow::Error::new)
+    }
+
+    fn path() -> Result<PathBuf> {
+        dirs::home_dir()
+            .ok_or(anyhow!("Failed to get home directory."))
+            .map(|p| p.join(".aws/mfa_config.yml"))
     }
 }
 
@@ -87,5 +120,36 @@ mod tests {
 
         let config = config.unwrap();
         assert_eq!(config.devices.len(), 0);
+    }
+
+    #[test]
+    fn it_sets_new_device() {
+        let path = Path::new("mock/test.yml");
+        let config = Config::load(path)
+            .unwrap()
+            .set("new_profile", "new_arn", "new_secret");
+
+        assert_eq!(config.devices.len(), 2);
+
+        let device = config.devices.iter().find(|d| d.profile == "new_profile");
+        assert!(device.is_some());
+
+        let device = device.unwrap();
+        assert_eq!(device.profile, "new_profile");
+        assert_eq!(device.arn, "new_arn");
+        assert_eq!(device.secret, "new_secret");
+    }
+
+    #[test]
+    fn it_writes_contents() {
+        let path = Path::new("mock/write_test.yml");
+        Config::load(Path::new("mock/test.yml"))
+            .unwrap()
+            .set("write_profile", "write_arn", "write_secret")
+            .write(path)
+            .unwrap();
+
+        let config = Config::load(path).unwrap();
+        assert_eq!(config.devices.len(), 2);
     }
 }

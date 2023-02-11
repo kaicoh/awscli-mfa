@@ -1,4 +1,4 @@
 devices:
-  - profile: test
-    arn: arn:aws:iam::123456789012:mfa/mfa_device_name
-    secret: somesecret
+- profile: test
+  arn: arn:aws:iam::123456789012:mfa/mfa_device_name
+  secret: somesecret

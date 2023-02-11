@@ -48,11 +48,11 @@ fn main() {
 fn run() -> Result<()> {
     let cli = Cli::parse();
 
+    let config = Config::new()?;
     let profile = cli.profile.unwrap_or("default".to_string());
 
     match &cli.command {
         Some(Commands::Ls) => {
-            let config = Config::new()?;
             println!("{config}");
         }
         Some(Commands::Set(DeviceArgs {
@@ -60,7 +60,8 @@ fn run() -> Result<()> {
             arn,
             secret,
         })) => {
-            println!("set {profile} to config file. arn: {arn}, secret: {secret}");
+            config.set(profile, arn, secret).save()?;
+            println!("Saved device for profile: {profile} successfully");
         }
         None => {
             println!("exec mfa action for profile: {profile}");
