@@ -129,8 +129,7 @@ impl ToString for Credential {
 fn capture_profile(line: &str) -> Option<&str> {
     RE_PROFILE
         .captures(line)
-        .map(|caps| caps.get(1))
-        .flatten()
+        .and_then(|caps| caps.get(1))
         .map(|mat| mat.as_str())
 }
 
