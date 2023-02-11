@@ -18,5 +18,4 @@ serde_yaml = "0.9"
 tokio = { version = "1", features = ["full"] }
 
 [dependencies.otp]
-
 git = "https://github.com/TimDumol/rust-otp"
