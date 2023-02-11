@@ -27,7 +27,7 @@ impl fmt::Display for Config {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 struct Device {
     profile: String,
     arn: String,
@@ -69,6 +69,14 @@ impl Config {
         self.write(path.as_path())
     }
 
+    pub fn get_arn(&self, profile: &str) -> Result<String> {
+        self.get_device(profile).map(|d| d.arn)
+    }
+
+    pub fn get_secret(&self, profile: &str) -> Result<String> {
+        self.get_device(profile).map(|d| d.secret)
+    }
+
     fn load(path: &Path) -> Result<Self> {
         if path.exists() {
             let config = std::fs::read_to_string(path)
@@ -89,6 +97,11 @@ impl Config {
             .ok_or(anyhow!("Failed to get home directory."))
             .map(|p| p.join(".aws/mfa_config.yml"))
     }
+
+    fn get_device(&self, profile: &str) -> Result<Device> {
+        self.devices.iter().find(|d| d.profile == profile).cloned()
+            .ok_or(anyhow!("Not found mfa device for profile: {}", profile))
+    }
 }
 
 #[cfg(test)]
@@ -108,6 +121,24 @@ mod tests {
         assert_eq!(device.profile, "test");
         assert_eq!(device.arn, "arn:aws:iam::123456789012:mfa/mfa_device_name");
         assert_eq!(device.secret, "somesecret");
+    }
+
+    #[test]
+    fn it_gets_arn() {
+        let path = Path::new("mock/test.yml");
+        let config = Config::load(path).unwrap();
+        let arn = config.get_arn("test");
+        assert!(arn.is_ok());
+        assert_eq!(arn.unwrap(), "arn:aws:iam::123456789012:mfa/mfa_device_name");
+    }
+
+    #[test]
+    fn it_gets_secret() {
+        let path = Path::new("mock/test.yml");
+        let config = Config::load(path).unwrap();
+        let secret = config.get_secret("test");
+        assert!(secret.is_ok());
+        assert_eq!(secret.unwrap(), "somesecret");
     }
 
     #[test]

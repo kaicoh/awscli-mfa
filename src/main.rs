@@ -30,6 +30,7 @@ fn run() -> Result<()> {
     match &cli.command {
         Some(cmd::Commands::Ls) => cmd::ls::run(config),
         Some(cmd::Commands::Set(args)) => cmd::set::run(config, args),
+        Some(cmd::Commands::Otp(args)) => cmd::otp::run(config, args),
         None => {
             println!("exec mfa action for profile: {profile}");
             Ok(())

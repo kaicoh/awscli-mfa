@@ -11,4 +11,7 @@ pub enum Commands {
 
     /// Set mfa device to config file.
     Set(set::Args),
+
+    /// Get one time password for provided profile
+    Otp(otp::Args),
 }
