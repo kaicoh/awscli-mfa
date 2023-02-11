@@ -13,7 +13,10 @@ pub struct Config {
 impl fmt::Display for Config {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         if self.devices.is_empty() {
-            writeln!(f, "There are no mfa devices. Use set command to register your first mfa device.")
+            writeln!(
+                f,
+                "There are no mfa devices. Use set command to register your first mfa device."
+            )
         } else {
             for d in self.devices.iter() {
                 writeln!(f, "{d}")?;

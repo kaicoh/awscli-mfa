@@ -1,5 +1,5 @@
 use awscli_mfa::{Config, Result};
-use clap::{Parser, Subcommand, Args};
+use clap::{Args, Parser, Subcommand};
 
 #[derive(Parser)]
 #[command(name = "awsmfa")]
@@ -55,7 +55,11 @@ fn run() -> Result<()> {
             let config = Config::new()?;
             println!("{config}");
         }
-        Some(Commands::Set(DeviceArgs { profile, arn, secret })) => {
+        Some(Commands::Set(DeviceArgs {
+            profile,
+            arn,
+            secret,
+        })) => {
             println!("set {profile} to config file. arn: {arn}, secret: {secret}");
         }
         None => {
