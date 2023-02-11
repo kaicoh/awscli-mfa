@@ -1,7 +1,7 @@
 use crate::Result;
 
 use anyhow::anyhow;
-use aws_sdk_sts::{Client, output::GetSessionTokenOutput};
+use aws_sdk_sts::{output::GetSessionTokenOutput, Client};
 
 #[derive(Debug, Default)]
 pub struct GetSessionToken {
@@ -21,11 +21,17 @@ impl GetSessionToken {
     }
 
     pub fn set_duration_seconds(self, duration_seconds: Option<i32>) -> Self {
-        Self { duration_seconds, ..self }
+        Self {
+            duration_seconds,
+            ..self
+        }
     }
 
     pub fn set_serial_number(self, serial_number: Option<String>) -> Self {
-        Self { serial_number, ..self }
+        Self {
+            serial_number,
+            ..self
+        }
     }
 
     pub fn set_token_code(self, token_code: Option<String>) -> Self {
@@ -41,12 +47,7 @@ impl GetSessionToken {
         } = self;
 
         let config = match profile {
-            Some(profile) => {
-                aws_config::from_env()
-                    .profile_name(profile)
-                    .load()
-                    .await
-            },
+            Some(profile) => aws_config::from_env().profile_name(profile).load().await,
             None => aws_config::load_from_env().await,
         };
 
@@ -79,18 +80,12 @@ impl TryFrom<GetSessionTokenOutput> for Credential {
             .ok_or(anyhow!("Failed to get credentials from {:#?}", output))?;
 
         Ok(Self {
-            access_key_id: cred
-                .access_key_id()
-                .map(String::from)
-                .unwrap_or_default(),
+            access_key_id: cred.access_key_id().map(String::from).unwrap_or_default(),
             secret_access_key: cred
                 .secret_access_key()
                 .map(String::from)
                 .unwrap_or_default(),
-            session_token: cred
-                .session_token()
-                .map(String::from)
-                .unwrap_or_default(),
+            session_token: cred.session_token().map(String::from).unwrap_or_default(),
         })
     }
 }

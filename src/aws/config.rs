@@ -1,5 +1,6 @@
 use crate::Result;
 
+use super::sts;
 use anyhow::anyhow;
 use lazy_static::lazy_static;
 use regex::Regex;
@@ -7,7 +8,6 @@ use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::{Path, PathBuf};
 use std::string::ToString;
-use super::sts;
 
 lazy_static! {
     static ref RE_PROFILE: Regex = Regex::new(r"\[(.+)\]").unwrap();
@@ -115,7 +115,7 @@ impl Credential {
                 format!("aws_access_key_id={access_key_id}"),
                 format!("aws_secret_access_key={secret_access_key}"),
                 format!("aws_session_token={session_token}"),
-            ]
+            ],
         }
     }
 }
@@ -177,7 +177,7 @@ mod tests {
                     profile: "saito".into(),
                     lines: vec![],
                 },
-            ]
+            ],
         };
 
         let path = Path::new("mock/write_test_credentials");
@@ -191,10 +191,7 @@ mod tests {
 
         let cred = credentials.get(0).unwrap();
         assert_eq!(cred.profile, "tanaka");
-        assert_eq!(
-            cred.lines,
-            vec!["foobarbaz"]
-        );
+        assert_eq!(cred.lines, vec!["foobarbaz"]);
 
         let cred = credentials.get(1).unwrap();
         assert_eq!(cred.profile, "takahashi");

@@ -54,9 +54,7 @@ async fn run() -> Result<()> {
 
             let credential = Credential::from_sts_cred("mfa", sts_cred);
 
-            AwsConfig::new()?
-                .set(credential)
-                .save()
+            AwsConfig::new()?.set(credential).save()
         }
     }
 }
