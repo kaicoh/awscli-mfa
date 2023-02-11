@@ -1,4 +1,4 @@
-use crate::{Config, Result};
+use crate::{get_otp, Config, Result};
 
 use anyhow::anyhow;
 use cli_clipboard::{ClipboardContext, ClipboardProvider};
@@ -16,10 +16,8 @@ pub struct Args {
 
 pub fn run(config: Config, args: &Args) -> Result<()> {
     let Args { profile, clip } = args;
-    let secret = config.get_secret(profile.as_deref().unwrap_or("default"))?;
-    let password = otp::make_totp(&secret.to_ascii_uppercase(), 30, 0)
-        .map(|pass| format!("{pass}"))
-        .map_err(anyhow::Error::new)?;
+    let profile = profile.as_deref().unwrap_or("default");
+    let password = get_otp(&config, profile)?;
 
     println!("{password}");
 

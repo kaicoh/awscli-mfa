@@ -1,0 +1,96 @@
+use crate::Result;
+
+use anyhow::anyhow;
+use aws_sdk_sts::{Client, output::GetSessionTokenOutput};
+
+#[derive(Debug, Default)]
+pub struct GetSessionToken {
+    profile: Option<String>,
+    duration_seconds: Option<i32>,
+    serial_number: Option<String>,
+    token_code: Option<String>,
+}
+
+impl GetSessionToken {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    pub fn set_profile(self, profile: Option<String>) -> Self {
+        Self { profile, ..self }
+    }
+
+    pub fn set_duration_seconds(self, duration_seconds: Option<i32>) -> Self {
+        Self { duration_seconds, ..self }
+    }
+
+    pub fn set_serial_number(self, serial_number: Option<String>) -> Self {
+        Self { serial_number, ..self }
+    }
+
+    pub fn set_token_code(self, token_code: Option<String>) -> Self {
+        Self { token_code, ..self }
+    }
+
+    pub async fn send(self) -> Result<Credential> {
+        let Self {
+            profile,
+            duration_seconds,
+            serial_number,
+            token_code,
+        } = self;
+
+        let config = match profile {
+            Some(profile) => {
+                aws_config::from_env()
+                    .profile_name(profile)
+                    .load()
+                    .await
+            },
+            None => aws_config::load_from_env().await,
+        };
+
+        let output = Client::new(&config)
+            .get_session_token()
+            .set_duration_seconds(duration_seconds)
+            .set_serial_number(serial_number)
+            .set_token_code(token_code)
+            .send()
+            .await
+            .map_err(anyhow::Error::new)?;
+
+        Credential::try_from(output)
+    }
+}
+
+#[derive(Debug)]
+pub struct Credential {
+    pub access_key_id: String,
+    pub secret_access_key: String,
+    pub session_token: String,
+}
+
+impl TryFrom<GetSessionTokenOutput> for Credential {
+    type Error = anyhow::Error;
+
+    fn try_from(output: GetSessionTokenOutput) -> Result<Self> {
+        let cred = output
+            .credentials()
+            .ok_or(anyhow!("Failed to get credentials from {:#?}", output))?;
+
+        Ok(Self {
+            access_key_id: cred
+                .access_key_id()
+                .map(String::from)
+                .unwrap_or_default(),
+            secret_access_key: cred
+                .secret_access_key()
+                .map(String::from)
+                .unwrap_or_default(),
+            session_token: cred
+                .session_token()
+                .map(String::from)
+                .unwrap_or_default(),
+        })
+    }
+}
