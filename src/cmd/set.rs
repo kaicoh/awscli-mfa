@@ -16,7 +16,11 @@ pub struct Args {
 }
 
 pub fn run(config: Config, args: &Args) -> Result<()> {
-    let Args { profile, arn, secret } = args;
+    let Args {
+        profile,
+        arn,
+        secret,
+    } = args;
     config.set(profile, arn, secret).save()?;
     println!("Saved device for profile: {profile} successfully");
     Ok(())

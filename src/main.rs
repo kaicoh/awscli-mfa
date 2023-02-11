@@ -28,12 +28,8 @@ fn run() -> Result<()> {
     let profile = cli.profile.unwrap_or("default".to_string());
 
     match &cli.command {
-        Some(cmd::Commands::Ls) => {
-            cmd::ls::run(config)
-        }
-        Some(cmd::Commands::Set(args)) => {
-            cmd::set::run(config, args)
-        }
+        Some(cmd::Commands::Ls) => cmd::ls::run(config),
+        Some(cmd::Commands::Set(args)) => cmd::set::run(config, args),
         None => {
             println!("exec mfa action for profile: {profile}");
             Ok(())
