@@ -1,5 +1,5 @@
-use awscli_mfa::{Config, Result};
-use clap::{Args, Parser, Subcommand};
+use awscli_mfa::{cmd, Config, Result};
+use clap::Parser;
 
 #[derive(Parser)]
 #[command(name = "awsmfa")]
@@ -11,31 +11,7 @@ struct Cli {
 
     /// Commands to read or write config file.
     #[command(subcommand)]
-    command: Option<Commands>,
-}
-
-#[derive(Subcommand)]
-enum Commands {
-    /// List mfa devices.
-    Ls,
-
-    /// Set mfa device to config file.
-    Set(DeviceArgs),
-}
-
-#[derive(Args)]
-struct DeviceArgs {
-    /// Profile name
-    #[arg(short, long)]
-    profile: String,
-
-    /// Arn of mfa device
-    #[arg(short, long)]
-    arn: String,
-
-    /// Secret for the device
-    #[arg(short, long)]
-    secret: String,
+    command: Option<cmd::Commands>,
 }
 
 fn main() {
@@ -52,21 +28,15 @@ fn run() -> Result<()> {
     let profile = cli.profile.unwrap_or("default".to_string());
 
     match &cli.command {
-        Some(Commands::Ls) => {
-            println!("{config}");
+        Some(cmd::Commands::Ls) => {
+            cmd::ls::run(config)
         }
-        Some(Commands::Set(DeviceArgs {
-            profile,
-            arn,
-            secret,
-        })) => {
-            config.set(profile, arn, secret).save()?;
-            println!("Saved device for profile: {profile} successfully");
+        Some(cmd::Commands::Set(args)) => {
+            cmd::set::run(config, args)
         }
         None => {
             println!("exec mfa action for profile: {profile}");
+            Ok(())
         }
     }
-
-    Ok(())
 }
