@@ -39,9 +39,7 @@ async fn run() -> Result<()> {
         None => {
             let opt_profile = cli.profile;
             let opt_duration = cli.duration;
-            let profile: &str = opt_profile
-                .as_ref()
-                .map(|val| val.as_str())
+            let profile: &str = opt_profile.as_deref()
                 .unwrap_or("default");
 
             let serial_number = config.get_arn(profile)?;
