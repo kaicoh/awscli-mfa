@@ -34,7 +34,7 @@ The new credentials is valid until 2023-01-31 09:00:00.
 
 #### Options
 
-| long | short | requried | content
+| long | short | requried | description
 ----|---- |---- |----
 | profile | p | no | The profile name to execute aws-sts `get-session-token` action. When not provided the `default` is used.
 | duration | d | no | The duration seconds the generated credentials persists.
@@ -59,7 +59,7 @@ $ awsmfa otp --profile alpha --clip
 
 #### Options
 
-| long | short | requried | content
+| long | short | requried | description
 ----|---- |---- |----
 | profile | p | no | The profile name in the config file. When not provided the `default` is used.
 | clip | c | no | Whether copying the generated MFA code to the clipboad or not.
@@ -110,8 +110,12 @@ secret	: 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ABCDEFGHIJKLMNOPQR
 
 #### Options
 
-| long | short | requried | content
+| long | short | requried | description
 ----|---- |---- |----
 | profile | p | yes | The profile name in the config file.
 | arn | a | yes | The ARN for the MFA device.
 | secret | s | yes | The secret key for the MFA device.
+
+## License
+
+This software is released under the [MIT License](LICENSE).
