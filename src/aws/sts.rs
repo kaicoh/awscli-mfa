@@ -98,8 +98,7 @@ impl TryFrom<GetSessionTokenOutput> for StsCredential {
             session_token: cred.session_token().map(String::from).unwrap_or_default(),
             expiration: cred
                 .expiration()
-                .map(|exp| NaiveDateTime::from_timestamp_opt(exp.secs(), exp.subsec_nanos()))
-                .flatten(),
+                .and_then(|exp| NaiveDateTime::from_timestamp_opt(exp.secs(), exp.subsec_nanos())),
         })
     }
 }
