@@ -27,12 +27,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2cb2f989d18dd141ab8ae82f64d1a8cdd37e0840f73a406896cf5e99502fab61"
 
 [[package]]
-name = "ascii"
-version = "1.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d92bec98840b8f03a5ff5413de5293bfcd8bf96467cf5452609f939ec6f5de16"
-
-[[package]]
 name = "autocfg"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -338,12 +332,18 @@ dependencies = [
  "cli-clipboard",
  "dirs",
  "once_cell",
- "otp",
  "regex",
  "serde",
  "serde_yaml",
  "tokio",
+ "totp-rs",
 ]
+
+[[package]]
+name = "base32"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "23ce669cd6c8588f79e15cf450314f9638f967fc5770ff1c7c1deb0925ea7cfa"
 
 [[package]]
 name = "base64"
@@ -509,6 +509,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "constant_time_eq"
+version = "0.2.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f3ad85c1f65dc7b37604eb0e89748faf0b9653065f2a8ef69f96a687ec1e9279"
+
+[[package]]
 name = "core-foundation"
 version = "0.9.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -588,12 +594,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "data-encoding"
-version = "2.3.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "23d8666cb01533c39dde32bcbab8e227b4ed6679b2c925eba05feabea39508fb"
-
-[[package]]
 name = "derive-new"
 version = "0.5.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -646,20 +646,6 @@ name = "either"
 version = "1.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7fcaabb2fef8c910e7f4c7ce9f67a1283a1715879a7c230ca9d6d1ae31f16d91"
-
-[[package]]
-name = "err-derive"
-version = "0.2.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "22deed3a8124cff5fa835713fa105621e43bbdc46690c3a6b68328a012d350d4"
-dependencies = [
- "proc-macro-error",
- "proc-macro2",
- "quote",
- "rustversion",
- "syn",
- "synstructure",
-]
 
 [[package]]
 name = "errno"
@@ -1210,17 +1196,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9b7820b9daea5457c9f21c69448905d723fbd21136ccf521748f23fd49e723ee"
 
 [[package]]
-name = "otp"
-version = "1.0.0"
-source = "git+https://github.com/kaicoh/rust-otp#dd96dee878012ab7a9969e75b4427607ca4e7f6f"
-dependencies = [
- "ascii",
- "data-encoding",
- "err-derive",
- "ring",
-]
-
-[[package]]
 name = "outref"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1463,12 +1438,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "rustversion"
-version = "1.0.11"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5583e89e108996506031660fe09baa5011b9dd0341b89029313006d1fb508d70"
-
-[[package]]
 name = "ryu"
 version = "1.0.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1568,6 +1537,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "sha1"
+version = "0.10.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f04293dc80c3993519f2d7f6f511707ee7094fe0c6d3406feb330cdb3540eba3"
+dependencies = [
+ "cfg-if",
+ "cpufeatures",
+ "digest",
+]
+
+[[package]]
 name = "sha2"
 version = "0.10.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1654,18 +1634,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "unicode-ident",
-]
-
-[[package]]
-name = "synstructure"
-version = "0.12.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f36bdaa60a83aca3921b5259d5400cbf5e90fc51931376a9bd4a0eb79aa7210f"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn",
- "unicode-xid",
 ]
 
 [[package]]
@@ -1816,6 +1784,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "totp-rs"
+version = "4.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9fdd21080b6cf581e0c8fe849626ad627b42af1a0f71ce980244f2d6b1a47836"
+dependencies = [
+ "base32",
+ "constant_time_eq",
+ "hmac",
+ "sha1",
+ "sha2",
+]
+
+[[package]]
 name = "tower"
 version = "0.4.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1913,12 +1894,6 @@ name = "unicode-width"
 version = "0.1.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c0edd1e5b14653f783770bce4a4dabb4a5108a5370a5f5d8cfe8710c361f6c8b"
-
-[[package]]
-name = "unicode-xid"
-version = "0.2.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f962df74c8c05a667b5ee8bcf162993134c104e96440b663c8daa176dc772d8c"
 
 [[package]]
 name = "unsafe-libyaml"

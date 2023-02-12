@@ -12,8 +12,11 @@ jobs:
   create-release:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: taiki-e/create-gh-release-action@v1
+      - name: Checkout sources
+        uses: actions/checkout@v3
+
+      - name: Create release
+        uses: taiki-e/create-gh-release-action@v1
         with:
           changelog: CHANGELOG.md
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -34,9 +37,28 @@ jobs:
             os: windows-latest
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v3
-      - uses: taiki-e/upload-rust-binary-action@v1
+      - name: Checkout sources
+        uses: actions/checkout@v3
+
+      - name: Upload binary
+        uses: taiki-e/upload-rust-binary-action@v1
         with:
           bin: awsmfa
           target: ${{ matrix.target }}
           token: ${{ secrets.GITHUB_TOKEN }}
+
+  cargo-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v3
+
+      - name: Setup rust
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
+      - name: Publish
+        run: cargo publish --token ${{ secrets.CARGO_TOKEN }}
