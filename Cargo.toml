@@ -8,6 +8,7 @@ authors = ["Kanji Tanaka <sumireminami@gmail.com>"]
 anyhow = "1.0"
 aws-config = "0.54.1"
 aws-sdk-sts = "0.24.0"
+chrono = "0.4"
 clap = { version = "4.1", features = ["derive"] }
 cli-clipboard = "0.4"
 dirs = "4.0"

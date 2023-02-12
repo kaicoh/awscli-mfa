@@ -39,7 +39,8 @@ async fn run() -> Result<()> {
         None => {
             let opt_profile = cli.profile;
             let opt_duration = cli.duration;
-            let profile: &str = opt_profile.as_deref().unwrap_or("default");
+            let profile = opt_profile.as_deref().unwrap_or("default");
+            let mfa_profile = &format!("{profile}-mfa");
 
             let serial_number = config.get_arn(profile)?;
             let token_code = get_otp(&config, profile)?;
@@ -52,9 +53,16 @@ async fn run() -> Result<()> {
                 .send()
                 .await?;
 
+            let expiration = sts_cred.expiration();
+
             AwsConfig::new()?
-                .set(Credential::from_sts_cred("mfa", sts_cred))
-                .save()
+                .set(Credential::from_sts_cred(mfa_profile, sts_cred))
+                .save()?;
+
+            println!("Saved credentials successfully as profile \"{mfa_profile}\".");
+            println!("The new credentials is valid until {expiration}.");
+
+            Ok(())
         }
     }
 }

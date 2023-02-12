@@ -105,6 +105,7 @@ impl Credential {
             access_key_id,
             secret_access_key,
             session_token,
+            ..
         } = cred;
 
         Self {

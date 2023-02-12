@@ -29,6 +29,7 @@ Execute the binary and the new credentials are saved as `[profile]-mfa` in AWS C
 ```
 $ awsmfa --profile alpha --duration 43200
 Saved credentials successfully as profile "alpha-mfa".
+The new credentials is valid until 2023-01-31 09:00:00.
 ```
 
 #### Options

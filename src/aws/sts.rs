@@ -2,6 +2,7 @@ use crate::Result;
 
 use anyhow::anyhow;
 use aws_sdk_sts::{output::GetSessionTokenOutput, Client};
+use chrono::prelude::*;
 
 #[derive(Debug, Default)]
 pub struct GetSessionToken {
@@ -69,6 +70,15 @@ pub struct StsCredential {
     pub access_key_id: String,
     pub secret_access_key: String,
     pub session_token: String,
+    expiration: Option<NaiveDateTime>,
+}
+
+impl StsCredential {
+    pub fn expiration(&self) -> String {
+        self.expiration
+            .map(|dt| dt.format("%Y-%m-%d %H:%M:%S").to_string())
+            .unwrap_or("Unown".to_string())
+    }
 }
 
 impl TryFrom<GetSessionTokenOutput> for StsCredential {
@@ -86,6 +96,10 @@ impl TryFrom<GetSessionTokenOutput> for StsCredential {
                 .map(String::from)
                 .unwrap_or_default(),
             session_token: cred.session_token().map(String::from).unwrap_or_default(),
+            expiration: cred
+                .expiration()
+                .map(|exp| NaiveDateTime::from_timestamp_opt(exp.secs(), exp.subsec_nanos()))
+                .flatten(),
         })
     }
 }
