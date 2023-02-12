@@ -1,6 +1,21 @@
 # awscli-mfa
 
+[![Version](https://img.shields.io/crates/v/awsmfa)](https://crates.io/crates/awsmfa)
+[![License](https://img.shields.io/crates/l/awsmfa)](LICENSE)
+[![Build](https://img.shields.io/github/actions/workflow/status/kaicoh/awscli-mfa/build.yml)](https://github.com/kaicoh/awscli-mfa/actions/workflows/build.yml)
+[![Release](https://img.shields.io/github/actions/workflow/status/kaicoh/awscli-mfa/release.yml)](https://github.com/kaicoh/awscli-mfa/actions/workflows/release.yml)
+
 This tool automates Multi-Factor Authentication (MFA) process in using awscli. It generates one time password, gets session token of AWS STS and updates AWS Credential file to use awscli with authenticated credentials.
+
+## Installation
+
+You can install **awsmfa** via `cargo install` command.
+
+```
+$ cargo install awsmfa
+```
+
+Or download the binary file from the [release page](https://github.com/kaicoh/awscli-mfa/releases).
 
 ## Usage
 

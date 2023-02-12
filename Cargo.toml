@@ -1,8 +1,15 @@
 [package]
 name = "awsmfa"
-version = "0.2.0"
+version = "0.2.1"
 edition = "2021"
-authors = ["Kanji Tanaka <sumireminami@gmail.com>"]
+authors = ["Kanji Tanaka"]
+categories = ["command-line-utilities"]
+keywords = ["aws", "awscli", "aws-sts", "mfa", "2fa"]
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/kaicoh/awscli-mfa"
+documentation = "https://docs.rs/awsmfa"
+description = "This tool automates Multi-Factor Authentication (MFA) process in using awscli."
 
 [dependencies]
 anyhow = "1.0"
@@ -17,6 +24,4 @@ regex = "1.7"
 serde = { version = "1.0", features = ["derive"] }
 serde_yaml = "0.9"
 tokio = { version = "1", features = ["full"] }
-
-[dependencies.otp]
-git = "https://github.com/kaicoh/rust-otp"
+totp-rs = "4.2"
