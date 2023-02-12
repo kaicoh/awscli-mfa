@@ -77,7 +77,7 @@ impl StsCredential {
     pub fn expiration(&self) -> String {
         self.expiration
             .map(|dt| dt.format("%Y-%m-%d %H:%M:%S").to_string())
-            .unwrap_or("Unown".to_string())
+            .unwrap_or("Unknown".to_string())
     }
 }
 
