@@ -2,6 +2,7 @@ use clap::Subcommand;
 
 pub mod ls;
 pub mod otp;
+pub mod rm;
 pub mod set;
 
 #[derive(Subcommand)]
@@ -14,4 +15,7 @@ pub enum Commands {
 
     /// Get one time password for provided profile
     Otp(otp::Args),
+
+    /// Remove mfa device from config file.
+    Rm(rm::Args),
 }

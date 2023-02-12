@@ -49,17 +49,23 @@ impl Config {
     }
 
     pub fn set(self, profile: &str, arn: &str, secret: &str) -> Self {
-        let mut devices: Vec<Device> = self
-            .devices
-            .into_iter()
-            .filter(|d| d.profile != profile)
-            .collect();
+        let mut devices = self.remove(profile).devices;
 
         devices.push(Device {
             profile: profile.into(),
             arn: arn.into(),
             secret: secret.into(),
         });
+
+        Self { devices }
+    }
+
+    pub fn remove(self, profile: &str) -> Self {
+        let devices: Vec<Device> = self
+            .devices
+            .into_iter()
+            .filter(|d| d.profile != profile)
+            .collect();
 
         Self { devices }
     }

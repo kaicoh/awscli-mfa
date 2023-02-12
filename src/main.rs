@@ -36,6 +36,7 @@ async fn run() -> Result<()> {
         Some(cmd::Commands::Ls) => cmd::ls::run(config),
         Some(cmd::Commands::Set(args)) => cmd::set::run(config, args),
         Some(cmd::Commands::Otp(args)) => cmd::otp::run(config, args),
+        Some(cmd::Commands::Rm(args)) => cmd::rm::run(config, args),
         None => {
             let opt_profile = cli.profile;
             let opt_duration = cli.duration;
