@@ -1,5 +1,5 @@
-use awscli_mfa::aws::{Config as AwsConfig, Credential, GetSessionToken};
-use awscli_mfa::{cmd, get_otp, Config, Result};
+use awsmfa::aws::{Config as AwsConfig, Credential, GetSessionToken};
+use awsmfa::{cmd, get_otp, Config, Result};
 use clap::Parser;
 
 #[derive(Parser)]

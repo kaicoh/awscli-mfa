@@ -327,7 +327,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "awscli-mfa"
+name = "awsmfa"
 version = "0.1.0"
 dependencies = [
  "anyhow",
