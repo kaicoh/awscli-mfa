@@ -27,12 +27,14 @@ jobs:
         run: cargo check
 
   test:
-    name: Test -- ${{ matrix.os }} -- ${{ matrix.rust_version }}
+    name: Test -- ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest]
-        rust_version: ["1.67.0", "stable"]
+        os:
+          - macos-latest
+          - ubuntu-latest
+          - windows-latest
     steps:
       - name: Checkout sources
         uses: actions/checkout@v3
@@ -40,8 +42,7 @@ jobs:
       - name: Install stable toolchain
         uses: dtolnay/rust-toolchain@master
         with:
-          toolchain: ${{ matrix.rust_version }}
-          targets: x86_64-unknown-linux-gnu
+          toolchain: stable
 
       - uses: Swatinem/rust-cache@v2
         with:
