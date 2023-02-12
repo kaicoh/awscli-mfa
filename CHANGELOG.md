@@ -2,7 +2,7 @@
 
 ## [0.2.0][] - 2023-02-12
 
-- https://github.com/kaicoh/awscli-mfa/pull/2 Add 'rm' subcommand
+- https://github.com/kaicoh/awscli-mfa/pull/2 Add rm subcommand
 - https://github.com/kaicoh/awscli-mfa/pull/3 Cross compile feature
 
 ## [0.1.0][] - 2023-02-12
