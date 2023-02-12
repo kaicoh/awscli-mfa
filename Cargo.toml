@@ -24,6 +24,4 @@ regex = "1.7"
 serde = { version = "1.0", features = ["derive"] }
 serde_yaml = "0.9"
 tokio = { version = "1", features = ["full"] }
-
-[dependencies.otp]
-git = "https://github.com/kaicoh/rust-otp"
+totp-rs = "4.2"
