@@ -22,6 +22,6 @@ pub fn run(config: Config, args: &Args) -> Result<()> {
         secret,
     } = args;
     config.set(profile, arn, secret).save()?;
-    println!("Saved device for profile: {profile} successfully");
+    println!("Saved MFA device for profile \"{profile}\" successfully.");
     Ok(())
 }

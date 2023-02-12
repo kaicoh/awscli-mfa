@@ -91,7 +91,7 @@ $ awsmfa set \
 > --profile beta \
 > --arn arn:aws:iam::123456788990:mfa/beta \
 > --secret 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ABCDEFGHIJKLMNOPQR
-Saved device for profile "beta" successfully
+Saved MFA device for profile "beta" successfully.
 
 $ awsmfa ls
 [profile default]
