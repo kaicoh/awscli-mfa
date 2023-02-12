@@ -116,6 +116,23 @@ secret	: 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ABCDEFGHIJKLMNOPQR
 | arn | a | yes | The ARN for the MFA device.
 | secret | s | yes | The secret key for the MFA device.
 
+---
+
+### rm
+
+Remove the MFA device from the config file.
+
+```
+$ awsmfa rm --profile beta
+Removed the MFA device for profile "beta" successfully.
+```
+
+#### Options
+
+| long | short | requried | description
+----|---- |---- |----
+| profile | p | yes | The profile name in the config file.
+
 ## License
 
 This software is released under the [MIT License](LICENSE).
