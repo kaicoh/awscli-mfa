@@ -35,7 +35,7 @@ devices:
 
 You can get the secret for each MFA device from the following screen in the registration process of the MFA device. If you want MFA code in registration process, you can get it via [otp subcommand](#otp).
 
-![How to get secret](assets/How_to_get_secret.png)
+![How to get secret](https://github.com/kaicoh/awscli-mfa/blob/images/assets/How_to_get_secret.png)
 
 ### 2. Save new credentials
 
