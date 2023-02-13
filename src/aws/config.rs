@@ -19,7 +19,11 @@ impl ConfigFileBase for Config {
     }
 
     fn fmt_profile(profile: &Profile) -> String {
-        format!("[profile {}]\n{}", profile.name, profile.lines.join("\n"))
+        if profile.name == "default" {
+            format!("[default]\n{}", profile.lines.join("\n"))
+        } else {
+            format!("[profile {}]\n{}", profile.name, profile.lines.join("\n"))
+        }
     }
 
     fn profiles(&self) -> &[Profile] {
