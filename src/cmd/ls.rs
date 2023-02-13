@@ -1,6 +1,6 @@
-use crate::{Config, Result};
+use crate::{MfaConfig, Result};
 
-pub fn run(config: Config) -> Result<()> {
+pub fn run(config: MfaConfig) -> Result<()> {
     println!("{config}");
     Ok(())
 }

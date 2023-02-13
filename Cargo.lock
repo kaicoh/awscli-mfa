@@ -322,7 +322,7 @@ dependencies = [
 
 [[package]]
 name = "awsmfa"
-version = "0.2.1"
+version = "0.3.0"
 dependencies = [
  "anyhow",
  "aws-config",
@@ -331,7 +331,6 @@ dependencies = [
  "clap",
  "cli-clipboard",
  "dirs",
- "once_cell",
  "regex",
  "serde",
  "serde_yaml",

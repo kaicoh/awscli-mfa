@@ -7,20 +7,20 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 #[derive(Debug, Deserialize, Serialize, Default)]
-pub struct Config {
-    devices: Vec<Device>,
+pub struct MfaConfig {
+    secrets: Vec<Secret>,
 }
 
-impl fmt::Display for Config {
+impl fmt::Display for MfaConfig {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        if self.devices.is_empty() {
+        if self.secrets.is_empty() {
             writeln!(
                 f,
-                "There are no mfa devices. Use set command to register your first mfa device."
+                "There are no secret keys in ~/.aws/awsmfa.yml. Use set command to register your first secret key."
             )
         } else {
-            for d in self.devices.iter() {
-                writeln!(f, "{d}")?;
+            for s in self.secrets.iter() {
+                writeln!(f, "{s}")?;
             }
             write!(f, "")
         }
@@ -28,46 +28,43 @@ impl fmt::Display for Config {
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
-struct Device {
+struct Secret {
     profile: String,
-    arn: String,
-    secret: String,
+    value: String,
 }
 
-impl fmt::Display for Device {
+impl fmt::Display for Secret {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         writeln!(f, "[profile {}]", self.profile)?;
-        writeln!(f, "arn\t: {}", self.arn)?;
-        writeln!(f, "secret\t: {}", self.secret)
+        writeln!(f, "secret\t: {}", self.value)
     }
 }
 
-impl Config {
+impl MfaConfig {
     pub fn new() -> Result<Self> {
         let path = Self::path()?;
         Self::load(path.as_path())
     }
 
-    pub fn set(self, profile: &str, arn: &str, secret: &str) -> Self {
-        let mut devices = self.remove(profile).devices;
+    pub fn set(self, profile: &str, value: &str) -> Self {
+        let mut secrets = self.remove(profile).secrets;
 
-        devices.push(Device {
+        secrets.push(Secret {
             profile: profile.into(),
-            arn: arn.into(),
-            secret: secret.into(),
+            value: value.into(),
         });
 
-        Self { devices }
+        Self { secrets }
     }
 
     pub fn remove(self, profile: &str) -> Self {
-        let devices: Vec<Device> = self
-            .devices
+        let secrets: Vec<Secret> = self
+            .secrets
             .into_iter()
-            .filter(|d| d.profile != profile)
+            .filter(|s| s.profile != profile)
             .collect();
 
-        Self { devices }
+        Self { secrets }
     }
 
     pub fn save(&self) -> Result<()> {
@@ -75,12 +72,17 @@ impl Config {
         self.write(path.as_path())
     }
 
-    pub fn get_arn(&self, profile: &str) -> Result<String> {
-        self.get_device(profile).map(|d| d.arn)
-    }
-
     pub fn get_secret(&self, profile: &str) -> Result<String> {
-        self.get_device(profile).map(|d| d.secret)
+        self.secrets
+            .iter()
+            .find_map(|s| {
+                if s.profile == profile {
+                    Some(s.value.to_string())
+                } else {
+                    None
+                }
+            })
+            .ok_or(anyhow!("Not found mfa device for profile: {}", profile))
     }
 
     fn load(path: &Path) -> Result<Self> {
@@ -101,15 +103,7 @@ impl Config {
     fn path() -> Result<PathBuf> {
         dirs::home_dir()
             .ok_or(anyhow!("Failed to get home directory."))
-            .map(|p| p.join(".aws/mfa_config.yml"))
-    }
-
-    fn get_device(&self, profile: &str) -> Result<Device> {
-        self.devices
-            .iter()
-            .find(|d| d.profile == profile)
-            .cloned()
-            .ok_or(anyhow!("Not found mfa device for profile: {}", profile))
+            .map(|p| p.join(".aws/awsmfa.yml"))
     }
 }
 
@@ -120,34 +114,21 @@ mod tests {
     #[test]
     fn it_reads_config() {
         let path = Path::new("mock/test.yml");
-        let config = Config::load(path);
+        let config = MfaConfig::load(path);
         assert!(config.is_ok());
 
         let config = config.unwrap();
-        assert_eq!(config.devices.len(), 1);
+        assert_eq!(config.secrets.len(), 1);
 
-        let device = config.devices.first().unwrap();
-        assert_eq!(device.profile, "test");
-        assert_eq!(device.arn, "arn:aws:iam::123456789012:mfa/mfa_device_name");
-        assert_eq!(device.secret, "somesecret");
-    }
-
-    #[test]
-    fn it_gets_arn() {
-        let path = Path::new("mock/test.yml");
-        let config = Config::load(path).unwrap();
-        let arn = config.get_arn("test");
-        assert!(arn.is_ok());
-        assert_eq!(
-            arn.unwrap(),
-            "arn:aws:iam::123456789012:mfa/mfa_device_name"
-        );
+        let secret = config.secrets.first().unwrap();
+        assert_eq!(secret.profile, "test");
+        assert_eq!(secret.value, "somesecret");
     }
 
     #[test]
     fn it_gets_secret() {
         let path = Path::new("mock/test.yml");
-        let config = Config::load(path).unwrap();
+        let config = MfaConfig::load(path).unwrap();
         let secret = config.get_secret("test");
         assert!(secret.is_ok());
         assert_eq!(secret.unwrap(), "somesecret");
@@ -156,41 +137,40 @@ mod tests {
     #[test]
     fn it_init_config_when_notfound() {
         let path = Path::new("mock/notfound.yml");
-        let config = Config::load(path);
+        let config = MfaConfig::load(path);
         assert!(config.is_ok());
 
         let config = config.unwrap();
-        assert_eq!(config.devices.len(), 0);
+        assert_eq!(config.secrets.len(), 0);
     }
 
     #[test]
     fn it_sets_new_device() {
         let path = Path::new("mock/test.yml");
-        let config = Config::load(path)
+        let config = MfaConfig::load(path)
             .unwrap()
-            .set("new_profile", "new_arn", "new_secret");
+            .set("new_profile", "new_secret");
 
-        assert_eq!(config.devices.len(), 2);
+        assert_eq!(config.secrets.len(), 2);
 
-        let device = config.devices.iter().find(|d| d.profile == "new_profile");
-        assert!(device.is_some());
+        let secret = config.secrets.iter().find(|d| d.profile == "new_profile");
+        assert!(secret.is_some());
 
-        let device = device.unwrap();
-        assert_eq!(device.profile, "new_profile");
-        assert_eq!(device.arn, "new_arn");
-        assert_eq!(device.secret, "new_secret");
+        let secret = secret.unwrap();
+        assert_eq!(secret.profile, "new_profile");
+        assert_eq!(secret.value, "new_secret");
     }
 
     #[test]
     fn it_writes_contents() {
         let path = Path::new("mock/write_test.yml");
-        Config::load(Path::new("mock/test.yml"))
+        MfaConfig::load(Path::new("mock/test.yml"))
             .unwrap()
-            .set("write_profile", "write_arn", "write_secret")
+            .set("write_profile", "write_secret")
             .write(path)
             .unwrap();
 
-        let config = Config::load(path).unwrap();
-        assert_eq!(config.devices.len(), 2);
+        let config = MfaConfig::load(path).unwrap();
+        assert_eq!(config.secrets.len(), 2);
     }
 }

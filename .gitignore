@@ -6,5 +6,4 @@
 **/*.rs.bk
 
 # test files
-/mock/write_test.yml
-/mock/write_test_credentials
+/mock/write_*

@@ -1,6 +1,6 @@
 [package]
 name = "awsmfa"
-version = "0.2.1"
+version = "0.3.0"
 edition = "2021"
 authors = ["Kanji Tanaka"]
 categories = ["command-line-utilities"]
@@ -9,7 +9,7 @@ license = "MIT"
 readme = "README.md"
 repository = "https://github.com/kaicoh/awscli-mfa"
 documentation = "https://docs.rs/awsmfa"
-description = "This tool automates Multi-Factor Authentication (MFA) process in using awscli."
+description = "The automation tool for Multi-Factor Authentication (MFA) process to use awscli."
 
 [dependencies]
 anyhow = "1.0"
@@ -19,7 +19,6 @@ chrono = "0.4"
 clap = { version = "4.1", features = ["derive"] }
 cli-clipboard = "0.4"
 dirs = "4.0"
-once_cell = "1.17"
 regex = "1.7"
 serde = { version = "1.0", features = ["derive"] }
 serde_yaml = "0.9"
