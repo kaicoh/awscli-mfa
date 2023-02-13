@@ -6,9 +6,9 @@ pub mod cmd;
 mod config;
 
 pub type Result<T> = std::result::Result<T, Error>;
-pub use config::Config;
+pub use config::MfaConfig;
 
-pub fn get_otp(config: &Config, profile: &str) -> Result<String> {
+pub fn get_otp(config: &MfaConfig, profile: &str) -> Result<String> {
     let secret = Secret::Encoded(config.get_secret(profile)?.to_ascii_uppercase())
         .to_bytes()
         .map_err(|e| anyhow!("{:#?}", e))?;

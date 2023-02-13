@@ -1,4 +1,4 @@
-use crate::{get_otp, Config, Result};
+use crate::{get_otp, MfaConfig, Result};
 
 use anyhow::anyhow;
 use cli_clipboard::{ClipboardContext, ClipboardProvider};
@@ -14,7 +14,7 @@ pub struct Args {
     clip: bool,
 }
 
-pub fn run(config: Config, args: &Args) -> Result<()> {
+pub fn run(config: MfaConfig, args: &Args) -> Result<()> {
     let Args { profile, clip } = args;
     let profile = profile.as_deref().unwrap_or("default");
     let password = get_otp(&config, profile)?;

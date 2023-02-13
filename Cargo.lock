@@ -331,7 +331,6 @@ dependencies = [
  "clap",
  "cli-clipboard",
  "dirs",
- "once_cell",
  "regex",
  "serde",
  "serde_yaml",
