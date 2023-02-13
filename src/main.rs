@@ -42,7 +42,7 @@ async fn run() -> Result<()> {
             let opt_duration = cli.duration;
             let profile = &opt_profile.clone().unwrap_or("default".to_string());
 
-            let mfa_profile = &format!("{}-mfa", profile);
+            let mfa_profile = &format!("{profile}-mfa");
             let aws_configs = AwsConfigs::new()?;
 
             let serial_number = aws_configs.get_mfa_serial(profile)?;
