@@ -1,4 +1,4 @@
-use crate::{Config, Result};
+use crate::{MfaConfig, Result};
 
 #[derive(clap::Args)]
 pub struct Args {
@@ -7,9 +7,9 @@ pub struct Args {
     profile: String,
 }
 
-pub fn run(config: Config, args: &Args) -> Result<()> {
+pub fn run(config: MfaConfig, args: &Args) -> Result<()> {
     let Args { profile } = args;
     config.remove(profile).save()?;
-    println!("Removed the MFA device for profile \"{profile}\" successfully.");
+    println!("Remove the secret key for profile \"{profile}\" successfully.");
     Ok(())
 }

@@ -1,5 +1,5 @@
-use awsmfa::aws::{Config as AwsConfig, Credential, GetSessionToken};
-use awsmfa::{cmd, get_otp, Config, Result};
+use awsmfa::aws::{AwsConfigs, GetSessionToken};
+use awsmfa::{cmd, get_otp, MfaConfig, Result};
 use clap::Parser;
 
 #[derive(Parser)]
@@ -30,7 +30,7 @@ async fn main() {
 async fn run() -> Result<()> {
     let cli = Cli::parse();
 
-    let config = Config::new()?;
+    let config = MfaConfig::new()?;
 
     match &cli.command {
         Some(cmd::Commands::Ls) => cmd::ls::run(config),
@@ -40,10 +40,12 @@ async fn run() -> Result<()> {
         None => {
             let opt_profile = cli.profile;
             let opt_duration = cli.duration;
-            let profile = opt_profile.as_deref().unwrap_or("default");
-            let mfa_profile = &format!("{profile}-mfa");
+            let profile = &opt_profile.clone().unwrap_or("default".to_string());
 
-            let serial_number = config.get_arn(profile)?;
+            let mfa_profile = &format!("{}-mfa", profile);
+            let aws_configs = AwsConfigs::new()?;
+
+            let serial_number = aws_configs.get_mfa_serial(profile)?;
             let token_code = get_otp(&config, profile)?;
 
             let sts_cred = GetSessionToken::new()
@@ -56,12 +58,12 @@ async fn run() -> Result<()> {
 
             let expiration = sts_cred.expiration();
 
-            AwsConfig::new()?
-                .set(Credential::from_sts_cred(mfa_profile, sts_cred))
-                .save()?;
+            aws_configs
+                .set_profile(profile, mfa_profile, sts_cred)
+                .and_then(|conf| conf.save())?;
 
-            println!("Saved credentials successfully as profile \"{mfa_profile}\".");
-            println!("The new credentials is valid until {expiration}.");
+            println!("New credentials is available as profile \"{mfa_profile}\".");
+            println!("It is valid until {expiration}.");
 
             Ok(())
         }
