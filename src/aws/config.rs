@@ -94,4 +94,92 @@ mod tests {
             vec!["region = ap-northeast-1", "output = json",]
         );
     }
+
+    #[test]
+    fn it_gets_mfa_serial() {
+        let config = Config {
+            profiles: vec![Profile {
+                name: "tanaka".into(),
+                lines: vec![
+                    "region = ap-northeast-1".into(),
+                    "output = json".into(),
+                    "mfa_serial = xxxxxxxxxxxxxxxx".into(),
+                ],
+            }],
+        };
+
+        assert!(config.get_mfa_serial("takahashi").is_err());
+        assert_eq!(config.get_mfa_serial("tanaka").unwrap(), "xxxxxxxxxxxxxxxx");
+    }
+
+    #[test]
+    fn it_sets_mfa_profile() {
+        let config = Config {
+            profiles: vec![Profile {
+                name: "tanaka".into(),
+                lines: vec![
+                    "region = ap-northeast-1".into(),
+                    "output = json".into(),
+                    "mfa_serial = xxxxxxxxxxxxxxxx".into(),
+                ],
+            }],
+        };
+
+        let config = config.set_mfa_profile("tanaka", "takahashi");
+        assert!(config.is_ok());
+
+        let Config { profiles } = config.unwrap();
+        assert_eq!(profiles.len(), 2);
+
+        let profile = profiles.get(0).unwrap();
+        assert_eq!(profile.name, "tanaka");
+        assert_eq!(
+            profile.lines,
+            vec![
+                "region = ap-northeast-1",
+                "output = json",
+                "mfa_serial = xxxxxxxxxxxxxxxx",
+            ]
+        );
+
+        let profile = profiles.get(1).unwrap();
+        assert_eq!(profile.name, "takahashi");
+        assert_eq!(
+            profile.lines,
+            vec!["region = ap-northeast-1", "output = json",]
+        );
+    }
+
+    #[test]
+    fn it_writes_config() {
+        let config = Config {
+            profiles: vec![
+                Profile {
+                    name: "tanaka".into(),
+                    lines: vec!["foobarbaz".into()],
+                },
+                Profile {
+                    name: "takahashi".into(),
+                    lines: vec!["foo".into(), "bar".into()],
+                },
+            ],
+        };
+
+        let path = Path::new("mock/write_test_config");
+        config.write(path).unwrap();
+
+        let config = Config::load(path);
+        assert!(config.is_ok());
+
+        let Config { profiles } = config.unwrap();
+        assert_eq!(profiles.len(), 2);
+
+        let profile = profiles.get(0).unwrap();
+        assert_eq!(profile.name, "tanaka");
+        assert_eq!(profile.lines, vec!["foobarbaz"]);
+
+        let profile = profiles.get(1).unwrap();
+        assert_eq!(profile.name, "takahashi");
+        assert_eq!(profile.lines, vec!["foo", "bar"]);
+    }
 }
