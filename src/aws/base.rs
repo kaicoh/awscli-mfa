@@ -40,7 +40,11 @@ pub trait ConfigFileBase: Sized {
             .iter()
             .find(|p| p.name == name)
             .cloned()
-            .ok_or(anyhow!("Failed to get profile: {} in ~/.aws/{}", name, Self::FILENAME))
+            .ok_or(anyhow!(
+                "Failed to get profile: {} in ~/.aws/{}",
+                name,
+                Self::FILENAME
+            ))
     }
 
     fn save(&self) -> Result<()> {

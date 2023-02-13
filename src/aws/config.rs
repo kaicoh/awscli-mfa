@@ -55,13 +55,15 @@ impl Config {
         self.get(name)?
             .lines
             .iter()
-            .find_map(|line| line.split_once('=').and_then(|(k, v)| {
-                if k.trim() == key {
-                    Some(v.trim())
-                } else {
-                    None
-                }
-            }))
+            .find_map(|line| {
+                line.split_once('=').and_then(|(k, v)| {
+                    if k.trim() == key {
+                        Some(v.trim())
+                    } else {
+                        None
+                    }
+                })
+            })
             .map(String::from)
             .ok_or(anyhow!("Not Found key: {} in profile: {}", key, name))
     }
@@ -83,22 +85,13 @@ mod tests {
 
         let profile = profiles.get(0).unwrap();
         assert_eq!(profile.name, "default");
-        assert_eq!(
-            profile.lines,
-            vec![
-                "region = us-east-1",
-                "output = yaml",
-            ]
-        );
+        assert_eq!(profile.lines, vec!["region = us-east-1", "output = yaml",]);
 
         let profile = profiles.get(1).unwrap();
         assert_eq!(profile.name, "test");
         assert_eq!(
             profile.lines,
-            vec![
-                "region = ap-northeast-1",
-                "output = json",
-            ]
+            vec!["region = ap-northeast-1", "output = json",]
         );
     }
 }

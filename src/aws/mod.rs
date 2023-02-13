@@ -29,7 +29,10 @@ impl AwsConfigs {
     }
 
     pub fn set_profile(self, src: &str, dst: &str, cred: sts::StsCredential) -> Result<Self> {
-        let Self { config, credentials } = self;
+        let Self {
+            config,
+            credentials,
+        } = self;
 
         Ok(Self {
             config: config.set_mfa_profile(src, dst)?,
