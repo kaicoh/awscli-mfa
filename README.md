@@ -99,6 +99,8 @@ $ aws s3 ls --profile alpha-mfa
 
 ## Subcommands
 
+This binary has some subcommands to configure or operate MFA related processes.
+
 ### otp
 
 Once you [configure](#1-configure-config-files), you can generate MFA code(= one time password) from this command.

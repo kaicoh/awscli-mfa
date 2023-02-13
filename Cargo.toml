@@ -9,7 +9,7 @@ license = "MIT"
 readme = "README.md"
 repository = "https://github.com/kaicoh/awscli-mfa"
 documentation = "https://docs.rs/awsmfa"
-description = "This tool automates Multi-Factor Authentication (MFA) process in using awscli."
+description = "The automation tool for Multi-Factor Authentication (MFA) process to use awscli."
 
 [dependencies]
 anyhow = "1.0"
