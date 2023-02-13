@@ -101,7 +101,7 @@ $ aws s3 ls --profile alpha-mfa
 
 ### otp
 
-Once you [configure](#1\.-configure-config-files), you can generate MFA code(= one time password) from this command.
+Once you [configure](#1-configure-config-files), you can generate MFA code(= one time password) from this command.
 
 ```
 $ awsmfa otp --profile alpha --clip
