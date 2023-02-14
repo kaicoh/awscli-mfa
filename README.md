@@ -48,7 +48,7 @@ secrets:
 
 You can get the secret key for each MFA device during the registration process for that in AWS Consol. If you want some MFA codes in that process, run [otp subcommand](#otp).
 
-![How to get secret](https://github.com/kaicoh/awscli-mfa/blob/images/assets/How_to_get_secret.png)
+![How to get secret](https://github.com/kaicoh/awscli-mfa/raw/images/assets/How_to_get_secret.png)
 
 ### 2. Run the command
 
