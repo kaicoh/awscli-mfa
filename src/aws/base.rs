@@ -216,7 +216,7 @@ impl<'a> ContentBuilder<'a> {
     }
 }
 
-fn capture<'a, 'b>(pattern: &'a str, line: &'b str) -> Option<&'b str> {
+fn capture<'a>(pattern: &'a str, line: &'a str) -> Option<&'a str> {
     let line = line.trim();
 
     if line == "[default]" {
