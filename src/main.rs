@@ -45,7 +45,7 @@ async fn run() -> Result<()> {
             let mfa_profile = &format!("{profile}-mfa");
             let aws_configs = AwsConfigs::new()?;
 
-            let serial_number = aws_configs.get_mfa_serial(profile)?;
+            let serial_number = aws_configs.mfa_serial(profile)?;
             let token_code = get_otp(&config, profile)?;
 
             let sts_cred = GetSessionToken::new()
@@ -59,7 +59,7 @@ async fn run() -> Result<()> {
             let expiration = sts_cred.expiration();
 
             aws_configs
-                .set_profile(profile, mfa_profile, sts_cred)
+                .set_cred(profile, mfa_profile, sts_cred)
                 .and_then(|conf| conf.save())?;
 
             println!("New credentials is available as profile \"{mfa_profile}\".");

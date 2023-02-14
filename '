@@ -1,6 +1,6 @@
 use crate::Result;
 
-use super::{aws_home, Content, ContentBuilder, PROFILE_CONFIG};
+use super::{filepath, Content, ContentBuilder, PROFILE_CONFIG};
 use std::path::PathBuf;
 
 const FILENAME: &str = "config";
@@ -14,7 +14,7 @@ pub struct Config {
 impl Config {
     pub fn new() -> Result<Self> {
         let content = ContentBuilder::new()
-            .set_path(filepath()?.as_path())
+            .set_path(filepath().as_path())
             .set_reg_profile(PROFILE_CONFIG)
             .load()?;
 
@@ -25,7 +25,8 @@ impl Config {
         self.content.get(profile, MFA_SERIAL)
     }
 
-    pub fn set_mfa_profile(self, src: &str, dst: &str) -> Result<Self> {
+    pub fn set_mfa_profile(self, src: &str) -> Result<Self> {
+        let dst = format!("{src}-mfa").as_str();
         let content = self.content
             .copy(src, dst)?
             .remove(dst, MFA_SERIAL)?;
@@ -34,15 +35,15 @@ impl Config {
     }
 
     pub fn save(&self) -> Result<()> {
-        let fmt = |p: &str| {
+        let fmt = &Box::new(|p: &str| {
             if p == "default" {
                 "[default]".to_string()
             } else {
                 format!("[profile {}]", p)
             }
-        };
+        });
 
-        self.content.write(filepath()?.as_path(), &fmt)
+        self.content.write(filepath()?.as_path(), fmt)
     }
 }
 
