@@ -28,7 +28,8 @@ impl Credentials {
             ..
         } = cred;
 
-        let content = self.content
+        let content = self
+            .content
             .add(profile)?
             .set(profile, "aws_access_key_id", &access_key_id)?
             .set(profile, "aws_secret_access_key", &secret_access_key)?

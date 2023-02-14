@@ -105,13 +105,18 @@ impl Content {
     }
 
     pub fn write<F: Fn(&str) -> String>(&self, path: &Path, fmt: &F) -> Result<()> {
-        std::fs::write(path, self.format(fmt))
-            .map_err(|e| anyhow!("Error writing to \"{}\". {}", path.to_str().unwrap_or("unknown path"), e))
+        std::fs::write(path, self.format(fmt)).map_err(|e| {
+            anyhow!(
+                "Error writing to \"{}\". {}",
+                path.to_str().unwrap_or("unknown path"),
+                e
+            )
+        })
     }
 
     fn set_fragment(self, fragment: Fragment) -> Result<Self> {
         let profile = fragment.profile.as_str();
-        let Self { mut fragments }  = self.remove_fragment(profile)?;
+        let Self { mut fragments } = self.remove_fragment(profile)?;
 
         fragments.push(fragment);
 
@@ -136,8 +141,7 @@ impl Content {
     }
 
     fn format<F: Fn(&str) -> String>(&self, fmt: &F) -> String {
-        self
-            .fragments
+        self.fragments
             .iter()
             .map(|f| f.format(fmt))
             .collect::<Vec<String>>()
@@ -253,10 +257,7 @@ mod tests {
             assert_eq!(fragment.profile, "default");
             assert_eq!(
                 fragment.lines,
-                vec![
-                    "region = us-east-1".to_owned(),
-                    "output = yaml".to_owned(),
-                ]
+                vec!["region = us-east-1".to_owned(), "output = yaml".to_owned(),]
             );
 
             let fragment = content.fragments.get(1).unwrap();
@@ -280,9 +281,7 @@ mod tests {
 
         #[test]
         fn it_adds_empty_profile() {
-            let content = build_content()
-                .add("test_v2")
-                .unwrap();
+            let content = build_content().add("test_v2").unwrap();
 
             assert_eq!(content.fragments.len(), 3);
 
@@ -305,17 +304,13 @@ mod tests {
 
         #[test]
         fn it_removes_profile_value() {
-            let content = build_content()
-                .remove("test", "region")
-                .unwrap();
+            let content = build_content().remove("test", "region").unwrap();
             assert!(content.get("test", "region").is_err());
         }
 
         #[test]
         fn it_copies_profile() {
-            let content = build_content()
-                .copy("test", "test_v2")
-                .unwrap();
+            let content = build_content().copy("test", "test_v2").unwrap();
 
             assert_eq!(content.fragments.len(), 3);
 

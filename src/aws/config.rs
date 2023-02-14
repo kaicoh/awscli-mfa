@@ -26,9 +26,7 @@ impl Config {
     }
 
     pub fn set_mfa_profile(self, src: &str, dst: &str) -> Result<Self> {
-        let content = self.content
-            .copy(src, dst)?
-            .remove(dst, MFA_SERIAL)?;
+        let content = self.content.copy(src, dst)?.remove(dst, MFA_SERIAL)?;
 
         Ok(Self { content })
     }
