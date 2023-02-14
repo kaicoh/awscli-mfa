@@ -1,6 +1,6 @@
 use crate::Result;
 
-use super::{ConfigFileBase, Profile};
+use super::{ConfigFileBase, Profile, PROFILE_CONFIG};
 use anyhow::anyhow;
 
 const MFA_SERIAL: &str = "mfa_serial";
@@ -12,7 +12,7 @@ pub struct Config {
 
 impl ConfigFileBase for Config {
     const FILENAME: &'static str = "config";
-    const PROFILE_PATTERN: &'static str = r"\[profile\s+(.+)\]";
+    const PROFILE_PATTERN: &'static str = PROFILE_CONFIG;
 
     fn build(profiles: Vec<Profile>) -> Self {
         Self { profiles }

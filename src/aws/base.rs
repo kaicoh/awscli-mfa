@@ -6,6 +6,9 @@ use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::{Path, PathBuf};
 
+pub const PROFILE_CREDENTIALS: &str = r"^\[(.+)\]$";
+pub const PROFILE_CONFIG: &str = r"^\[profile\s+(.+)\]$";
+
 #[derive(Debug, Clone)]
 pub struct Profile {
     pub name: String,
@@ -110,7 +113,9 @@ pub trait ConfigFileBase: Sized {
 }
 
 fn capture<'a>(pattern: &'static str, line: &'a str) -> Option<&'a str> {
-    if line.trim() == "[default]" {
+    let line = line.trim();
+
+    if line == "[default]" {
         return Some("default");
     }
 
@@ -119,4 +124,55 @@ fn capture<'a>(pattern: &'static str, line: &'a str) -> Option<&'a str> {
         .captures(line)
         .and_then(|caps| caps.get(1))
         .map(|mat| mat.as_str())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn it_capture_profile_line_from_credentials() {
+        let pattern = PROFILE_CREDENTIALS;
+
+        let profile = "[default]";
+        assert_eq!(capture(pattern, profile), Some("default"));
+
+        let profile = "[tanaka]";
+        assert_eq!(capture(pattern, profile), Some("tanaka"));
+
+        let profile = "[suzuki]";
+        assert_eq!(capture(pattern, profile), Some("suzuki"));
+
+        let profile = " [satoh]   ";
+        assert_eq!(capture(pattern, profile), Some("satoh"));
+
+        let non_profile = "access_key_id = AAAAAAAAAAAAAAAAAA";
+        assert_eq!(capture(pattern, non_profile), None);
+
+        let non_profile = "session_token = abcde[fghijk]lmn";
+        assert_eq!(capture(pattern, non_profile), None);
+    }
+
+    #[test]
+    fn it_capture_profile_line_from_config() {
+        let pattern = PROFILE_CONFIG;
+
+        let profile = "[default]";
+        assert_eq!(capture(pattern, profile), Some("default"));
+
+        let profile = "[profile tanaka]";
+        assert_eq!(capture(pattern, profile), Some("tanaka"));
+
+        let profile = "[profile suzuki]";
+        assert_eq!(capture(pattern, profile), Some("suzuki"));
+
+        let profile = " [profile satoh]   ";
+        assert_eq!(capture(pattern, profile), Some("satoh"));
+
+        let non_profile = "region = ap-northeast-1";
+        assert_eq!(capture(pattern, non_profile), None);
+
+        let non_profile = "foo = bar[profile baz]foobar";
+        assert_eq!(capture(pattern, non_profile), None);
+    }
 }

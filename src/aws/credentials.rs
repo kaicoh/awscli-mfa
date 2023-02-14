@@ -1,4 +1,4 @@
-use super::{sts::StsCredential, ConfigFileBase, Profile};
+use super::{sts::StsCredential, ConfigFileBase, Profile, PROFILE_CREDENTIALS};
 
 #[derive(Debug)]
 pub struct Credentials {
@@ -7,7 +7,7 @@ pub struct Credentials {
 
 impl ConfigFileBase for Credentials {
     const FILENAME: &'static str = "credentials";
-    const PROFILE_PATTERN: &'static str = r"\[(.+)\]";
+    const PROFILE_PATTERN: &'static str = PROFILE_CREDENTIALS;
 
     fn build(profiles: Vec<Profile>) -> Self {
         Self { profiles }

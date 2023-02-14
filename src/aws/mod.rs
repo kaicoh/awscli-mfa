@@ -5,7 +5,7 @@ mod config;
 mod credentials;
 mod sts;
 
-use base::{ConfigFileBase, Profile};
+use base::{ConfigFileBase, Profile, PROFILE_CONFIG, PROFILE_CREDENTIALS};
 use config::Config;
 use credentials::Credentials;
 pub use sts::GetSessionToken;
