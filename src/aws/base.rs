@@ -110,11 +110,9 @@ pub trait ConfigFileBase: Sized {
 }
 
 fn capture<'a>(pattern: &'static str, line: &'a str) -> Option<&'a str> {
-    let pattern = if line.trim() == "[default]" {
-        r"\[(.+)\]"
-    } else {
-        pattern
-    };
+    if line.trim() == "[default]" {
+        return Some("default");
+    }
 
     Regex::new(pattern)
         .unwrap()
