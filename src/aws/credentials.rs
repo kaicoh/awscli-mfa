@@ -38,7 +38,7 @@ impl Credentials {
     }
 
     pub fn save(&self) -> Result<()> {
-        let fmt = Box::new(|p: &str| format!("[{}]", p));
+        let fmt = Box::new(|p: &str| format!("[{p}]"));
         self.content.write(filepath()?.as_path(), &fmt)
     }
 }

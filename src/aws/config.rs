@@ -38,7 +38,7 @@ impl Config {
             if p == "default" {
                 "[default]".to_string()
             } else {
-                format!("[profile {}]", p)
+                format!("[profile {p}]")
             }
         };
 
