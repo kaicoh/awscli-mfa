@@ -37,12 +37,12 @@ impl Profile {
     }
 
     pub fn get(&self, key: &str) -> Option<&str> {
-        self.pairs().get(key).map(|v| *v)
+        self.pairs().get(key).copied()
     }
 
     pub fn set(self, key: &str, value: &str) -> Self {
         let mut lines = self.remove_line(key);
-        lines.push(format!("{} = {}", key, value));
+        lines.push(format!("{key} = {value}"));
 
         Self { lines, ..self }
     }

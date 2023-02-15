@@ -72,11 +72,13 @@ impl PartialEq for ConfFile {
     }
 }
 
+type Formatter = Box<dyn Fn(&str) -> String>;
+
 #[derive(Default)]
 pub struct ConfLoader<'a> {
     reg_profile: Option<&'a str>,
     path: Option<&'a Path>,
-    formatter: Option<Box<dyn Fn(&str) -> String>>,
+    formatter: Option<Formatter>,
 }
 
 impl<'a> ConfLoader<'a> {
