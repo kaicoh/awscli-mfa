@@ -6,7 +6,7 @@ mod credentials;
 mod sts;
 
 use anyhow::anyhow;
-use base::{Content, ContentBuilder, PROFILE_CONFIG, PROFILE_CREDENTIALS};
+use base::{ConfFile, ConfLoader, Profile};
 use config::Config;
 use credentials::Credentials;
 use std::path::PathBuf;
@@ -38,7 +38,7 @@ impl AwsConfigs {
 
         Ok(Self {
             config: config.set_mfa_profile(src, dst)?,
-            credentials: credentials.set_cred(dst, cred)?,
+            credentials: credentials.set_cred(dst, cred),
         })
     }
 

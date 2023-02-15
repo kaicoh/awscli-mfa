@@ -65,7 +65,7 @@ impl GetSessionToken {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct StsCredential {
     pub access_key_id: String,
     pub secret_access_key: String,

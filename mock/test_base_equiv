@@ -1,0 +1,7 @@
+[profile test]
+region = ap-northeast-1
+output = json
+
+[default]
+output = yaml
+region = us-east-1
