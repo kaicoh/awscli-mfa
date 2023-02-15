@@ -5,4 +5,3 @@ output = yaml
 [profile test]
 region = ap-northeast-1
 output = json
-mfa_serial = arn:aws:iam::999999999999:mfa/user

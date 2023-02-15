@@ -1,29 +1,23 @@
-use super::{sts::StsCredential, ConfigFileBase, Profile};
+use crate::Result;
+
+use super::{aws_home, sts::StsCredential, ConfFile, ConfLoader, Profile};
+use std::path::{Path, PathBuf};
+
+const PROFILE: &str = r"^\[(.+)\]$";
+const FILENAME: &str = "credentials";
 
 #[derive(Debug)]
 pub struct Credentials {
-    profiles: Vec<Profile>,
-}
-
-impl ConfigFileBase for Credentials {
-    const FILENAME: &'static str = "credentials";
-    const PROFILE_PATTERN: &'static str = r"\[(.+)\]";
-
-    fn build(profiles: Vec<Profile>) -> Self {
-        Self { profiles }
-    }
-
-    fn fmt_profile(profile: &Profile) -> String {
-        format!("[{}]\n{}", profile.name, profile.lines.join("\n"))
-    }
-
-    fn profiles(&self) -> &[Profile] {
-        &self.profiles
-    }
+    content: ConfFile,
 }
 
 impl Credentials {
-    pub fn set_sts_cred(self, name: &str, cred: StsCredential) -> Self {
+    pub fn new() -> Result<Self> {
+        let path = filepath()?;
+        Self::load(path.as_path())
+    }
+
+    pub fn set_cred(self, name: &str, cred: StsCredential) -> Self {
         let StsCredential {
             access_key_id,
             secret_access_key,
@@ -31,86 +25,95 @@ impl Credentials {
             ..
         } = cred;
 
-        let profile = Profile {
-            name: name.into(),
-            lines: vec![
-                format!("aws_access_key_id={access_key_id}"),
-                format!("aws_secret_access_key={secret_access_key}"),
-                format!("aws_session_token={session_token}"),
-            ],
-        };
+        let profile = Profile::new(name)
+            .set("aws_access_key_id", &access_key_id)
+            .set("aws_secret_access_key", &secret_access_key)
+            .set("aws_session_token", &session_token);
 
-        self.set(profile)
+        let content = self.content.set(profile);
+
+        Self { content }
     }
+
+    pub fn save(&self) -> Result<()> {
+        let path = filepath()?;
+        self.write(path.as_path())
+    }
+
+    fn load(path: &Path) -> Result<Self> {
+        let fmt = Box::new(|p: &str| format!("[{p}]"));
+        let content = ConfLoader::new()
+            .set_path(path)
+            .set_reg_profile(PROFILE)
+            .set_formatter(fmt)
+            .load()?;
+
+        Ok(Self { content })
+    }
+
+    fn write(&self, path: &Path) -> Result<()> {
+        self.content.write(path)
+    }
+}
+
+fn filepath() -> Result<PathBuf> {
+    Ok(aws_home()?.join(FILENAME))
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::path::Path;
 
-    #[test]
-    fn it_reads_credentials() {
+    fn build() -> Credentials {
         let path = Path::new("mock/test_credentials");
-        let credentials = Credentials::load(path);
-        assert!(credentials.is_ok());
-
-        let Credentials { profiles } = credentials.unwrap();
-        assert_eq!(profiles.len(), 2);
-
-        let profile = profiles.get(0).unwrap();
-        assert_eq!(profile.name, "tanaka");
-        assert_eq!(
-            profile.lines,
-            vec![
-                "aws_access_key_id=ABCDEFGHIJKLMNOPQRST",
-                "aws_secret_access_key=abcdefghijklmnopqrstuvwxyz+-#$1234567890",
-            ]
-        );
-
-        let profile = profiles.get(1).unwrap();
-        assert_eq!(profile.name, "suzuki");
-        assert_eq!(profile.lines, vec!["xxxxxxxxxxxxxxxx", "yyyyyyyyyyyy",]);
+        Credentials::load(path).unwrap()
     }
 
     #[test]
-    fn it_writes_credentials() {
-        let credentials = Credentials {
-            profiles: vec![
-                Profile {
-                    name: "tanaka".into(),
-                    lines: vec!["foobarbaz".into()],
-                },
-                Profile {
-                    name: "takahashi".into(),
-                    lines: vec!["foo".into(), "bar".into()],
-                },
-                Profile {
-                    name: "saito".into(),
-                    lines: vec![],
-                },
-            ],
-        };
+    fn it_loads_credentials() {
+        let creds = build();
+        let result = creds.content.profile("tanaka");
+        assert!(result.is_some());
 
+        let profile = result.unwrap();
+        assert_eq!(
+            profile.get("aws_access_key_id"),
+            Some("ABCDEFGHIJKLMNOPQRST")
+        );
+        assert_eq!(
+            profile.get("aws_secret_access_key"),
+            Some("abcdefghijklmnopqrstuvwxyz+-#$1234567890")
+        );
+    }
+
+    #[test]
+    fn it_sets_profile_from_sts_credentials() {
+        let mut cred = StsCredential::default();
+        cred.access_key_id = "access_key_id".to_string();
+        cred.secret_access_key = "secret_access_key".to_string();
+        cred.session_token = "session_token".to_string();
+
+        let creds = build().set_cred("test", cred);
+        let result = creds.content.profile("test");
+        assert!(result.is_some());
+
+        let profile = result.unwrap();
+        assert_eq!(profile.get("aws_access_key_id"), Some("access_key_id"));
+        assert_eq!(
+            profile.get("aws_secret_access_key"),
+            Some("secret_access_key")
+        );
+        assert_eq!(profile.get("aws_session_token"), Some("session_token"));
+    }
+
+    #[test]
+    fn it_writes_to_file() {
         let path = Path::new("mock/write_test_credentials");
-        credentials.write(path).unwrap();
+        let creds0 = build();
+        let result = creds0.write(path);
+        assert!(result.is_ok());
 
-        let credentials = Credentials::load(path);
-        assert!(credentials.is_ok());
-
-        let Credentials { profiles } = credentials.unwrap();
-        assert_eq!(profiles.len(), 3);
-
-        let profile = profiles.get(0).unwrap();
-        assert_eq!(profile.name, "tanaka");
-        assert_eq!(profile.lines, vec!["foobarbaz"]);
-
-        let profile = profiles.get(1).unwrap();
-        assert_eq!(profile.name, "takahashi");
-        assert_eq!(profile.lines, vec!["foo", "bar"]);
-
-        let profile = profiles.get(2).unwrap();
-        assert_eq!(profile.name, "saito");
-        assert!(profile.lines.is_empty());
+        let creds1 = Credentials::load(path).unwrap();
+        assert_eq!(creds0.content, creds1.content);
     }
 }
