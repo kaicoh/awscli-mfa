@@ -1,6 +1,6 @@
 [package]
 name = "awsmfa"
-version = "0.3.1"
+version = "0.3.2"
 edition = "2021"
 authors = ["Kanji Tanaka"]
 categories = ["command-line-utilities"]

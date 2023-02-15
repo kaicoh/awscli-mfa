@@ -1,189 +1,144 @@
 use crate::Result;
 
-use super::{ConfigFileBase, Profile};
+use super::{aws_home, ConfFile, ConfLoader};
 use anyhow::anyhow;
+use std::path::{Path, PathBuf};
 
+const PROFILE: &str = r"^\[profile\s+(.+)\]$";
+const FILENAME: &str = "config";
 const MFA_SERIAL: &str = "mfa_serial";
 
 #[derive(Debug)]
 pub struct Config {
-    profiles: Vec<Profile>,
-}
-
-impl ConfigFileBase for Config {
-    const FILENAME: &'static str = "config";
-    const PROFILE_PATTERN: &'static str = r"\[profile\s+(.+)\]";
-
-    fn build(profiles: Vec<Profile>) -> Self {
-        Self { profiles }
-    }
-
-    fn fmt_profile(profile: &Profile) -> String {
-        if profile.name == "default" {
-            format!("[default]\n{}", profile.lines.join("\n"))
-        } else {
-            format!("[profile {}]\n{}", profile.name, profile.lines.join("\n"))
-        }
-    }
-
-    fn profiles(&self) -> &[Profile] {
-        &self.profiles
-    }
+    content: ConfFile,
 }
 
 impl Config {
-    pub fn get_mfa_serial(&self, name: &str) -> Result<String> {
-        self.get_attr(name, MFA_SERIAL)
+    pub fn new() -> Result<Self> {
+        let path = filepath()?;
+        Self::load(path.as_path())
+    }
+
+    pub fn mfa_serial(&self, profile: &str) -> Result<&str> {
+        self.content
+            .profile(profile)
+            .ok_or(anyhow!(
+                "Not Found profile: {} at {}",
+                profile,
+                filepath()?.to_string_lossy(),
+            ))?
+            .get(MFA_SERIAL)
+            .ok_or(anyhow!(
+                "Not Found mfa_serial in profile {} at {}",
+                profile,
+                filepath()?.to_string_lossy(),
+            ))
     }
 
     pub fn set_mfa_profile(self, src: &str, dst: &str) -> Result<Self> {
-        let lines = self
-            .get(src)?
-            .lines
-            .into_iter()
-            .filter(|line| match line.split_once('=') {
-                Some((k, _)) => k.trim() != MFA_SERIAL,
-                None => true,
-            })
-            .collect::<Vec<String>>();
+        let profile = self
+            .content
+            .profile(src)
+            .cloned()
+            .ok_or(anyhow!(
+                "Not Found profile: {} at {}",
+                src,
+                filepath()?.to_string_lossy(),
+            ))?
+            .rename(dst)
+            .remove(MFA_SERIAL);
 
-        let profile = Profile {
-            name: dst.into(),
-            lines,
-        };
+        let content = self.content.set(profile);
 
-        Ok(self.set(profile))
+        Ok(Self { content })
     }
 
-    fn get_attr(&self, name: &str, key: &str) -> Result<String> {
-        self.get(name)?
-            .lines
-            .iter()
-            .find_map(|line| {
-                line.split_once('=').and_then(|(k, v)| {
-                    if k.trim() == key {
-                        Some(v.trim())
-                    } else {
-                        None
-                    }
-                })
-            })
-            .map(String::from)
-            .ok_or(anyhow!("Not Found key: {} in profile: {}", key, name))
+    pub fn save(&self) -> Result<()> {
+        let path = filepath()?;
+        self.write(path.as_path())
     }
+
+    fn load(path: &Path) -> Result<Self> {
+        let fmt = Box::new(|p: &str| {
+            if p == "default" {
+                "[default]".to_string()
+            } else {
+                format!("[profile {p}]")
+            }
+        });
+
+        let content = ConfLoader::new()
+            .set_path(path)
+            .set_reg_profile(PROFILE)
+            .set_formatter(fmt)
+            .load()?;
+
+        Ok(Self { content })
+    }
+
+    fn write(&self, path: &Path) -> Result<()> {
+        self.content.write(path)
+    }
+}
+
+fn filepath() -> Result<PathBuf> {
+    Ok(aws_home()?.join(FILENAME))
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::path::Path;
 
-    #[test]
-    fn it_reads_config() {
+    fn build() -> Config {
         let path = Path::new("mock/test_config");
-        let config = Config::load(path);
-        assert!(config.is_ok());
-
-        let Config { profiles } = config.unwrap();
-        assert_eq!(profiles.len(), 2);
-
-        let profile = profiles.get(0).unwrap();
-        assert_eq!(profile.name, "default");
-        assert_eq!(profile.lines, vec!["region = us-east-1", "output = yaml",]);
-
-        let profile = profiles.get(1).unwrap();
-        assert_eq!(profile.name, "test");
-        assert_eq!(
-            profile.lines,
-            vec!["region = ap-northeast-1", "output = json",]
-        );
+        Config::load(path).unwrap()
     }
 
     #[test]
-    fn it_gets_mfa_serial() {
-        let config = Config {
-            profiles: vec![Profile {
-                name: "tanaka".into(),
-                lines: vec![
-                    "region = ap-northeast-1".into(),
-                    "output = json".into(),
-                    "mfa_serial = xxxxxxxxxxxxxxxx".into(),
-                ],
-            }],
-        };
+    fn it_gets_mfa_serial_from_profile() {
+        let config = build();
 
-        assert!(config.get_mfa_serial("takahashi").is_err());
-        assert_eq!(config.get_mfa_serial("tanaka").unwrap(), "xxxxxxxxxxxxxxxx");
+        let result = config.mfa_serial("test");
+        assert!(result.is_ok());
+
+        let mfa_serial = result.unwrap();
+        assert_eq!(mfa_serial, "arn:aws:iam::999999999999:mfa/user");
+
+        let result = config.mfa_serial("default");
+        assert!(result.is_err());
     }
 
     #[test]
-    fn it_sets_mfa_profile() {
-        let config = Config {
-            profiles: vec![Profile {
-                name: "tanaka".into(),
-                lines: vec![
-                    "region = ap-northeast-1".into(),
-                    "output = json".into(),
-                    "mfa_serial = xxxxxxxxxxxxxxxx".into(),
-                ],
-            }],
-        };
+    fn it_copies_profile_without_mfa_serial() {
+        let config = build();
 
-        let config = config.set_mfa_profile("tanaka", "takahashi");
-        assert!(config.is_ok());
+        let result = config.set_mfa_profile("test", "test_v2");
+        assert!(result.is_ok());
 
-        let Config { profiles } = config.unwrap();
-        assert_eq!(profiles.len(), 2);
-
-        let profile = profiles.get(0).unwrap();
-        assert_eq!(profile.name, "tanaka");
+        let config = result.unwrap();
         assert_eq!(
-            profile.lines,
-            vec![
-                "region = ap-northeast-1",
-                "output = json",
-                "mfa_serial = xxxxxxxxxxxxxxxx",
-            ]
+            config.mfa_serial("test").unwrap(),
+            "arn:aws:iam::999999999999:mfa/user"
         );
+        assert!(config.mfa_serial("test_v2").is_err());
 
-        let profile = profiles.get(1).unwrap();
-        assert_eq!(profile.name, "takahashi");
-        assert_eq!(
-            profile.lines,
-            vec!["region = ap-northeast-1", "output = json",]
-        );
+        let test = config.content.profile("test").unwrap();
+        let test_v2 = config.content.profile("test_v2").unwrap();
+
+        assert_eq!(test.get("region"), test_v2.get("region"));
+        assert_eq!(test.get("output"), test_v2.get("output"));
     }
 
     #[test]
-    fn it_writes_config() {
-        let config = Config {
-            profiles: vec![
-                Profile {
-                    name: "tanaka".into(),
-                    lines: vec!["foobarbaz".into()],
-                },
-                Profile {
-                    name: "takahashi".into(),
-                    lines: vec!["foo".into(), "bar".into()],
-                },
-            ],
-        };
-
+    fn it_writes_to_file() {
+        let config0 = build();
         let path = Path::new("mock/write_test_config");
-        config.write(path).unwrap();
 
-        let config = Config::load(path);
-        assert!(config.is_ok());
+        let result = config0.write(path);
+        assert!(result.is_ok());
 
-        let Config { profiles } = config.unwrap();
-        assert_eq!(profiles.len(), 2);
+        let config1 = Config::load(path).unwrap();
 
-        let profile = profiles.get(0).unwrap();
-        assert_eq!(profile.name, "tanaka");
-        assert_eq!(profile.lines, vec!["foobarbaz"]);
-
-        let profile = profiles.get(1).unwrap();
-        assert_eq!(profile.name, "takahashi");
-        assert_eq!(profile.lines, vec!["foo", "bar"]);
+        assert_eq!(config0.content, config1.content);
     }
 }
